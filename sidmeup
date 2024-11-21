@@ -28,8 +28,9 @@ su -l $ME -c "\
 "
 fish -c "abbr --add vi nvim"
 fish -c "abbr --add vim nvim"
-curl -fsSL https://ollama.com/install.sh | sh
+su -l $ME -c "curl -fsSL https://ollama.com/install.sh | sh"
 curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH=$PATH:$HOME/.local/bin
 mkdir -p $HOME/.config/fish/completions
 uv generate-shell-completion fish > $HOME/.config/fish/completions/uv.fish
 uvx --generate-shell-completion fish > $HOME/.config/fish/completions/uvx.fish
