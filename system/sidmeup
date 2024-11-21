@@ -42,8 +42,11 @@ su -l $ME -c "\
   && rm ollama.tgz \
 "
 echo "# DONE!"
-echo "# Installing UV"
+echo "# Installing uv"
 curl -LsSf https://astral.sh/uv/install.sh | sh
+echo "# DONE!"
+echo "# Installing ruff"
+curl -LsSf https://astral.sh/ruff/install.sh | sh
 echo "# DONE!"
 echo "# Installing Go"
 su -l $ME -c "\
@@ -61,11 +64,17 @@ su -l $ME -c "\
 echo "# DONE!"
 echo "# Configuring some stuff..."
 chsh -s /usr/bin/fish
+mkdir -p $HOME/.config/{fish/completions, nvim, git, tmux}
+mkdir -p $HOME/.local/{python, ipython, jupyter}
+mkdir -p $HOME/{avi, dev, doc, jpg, tmp, var, wav}
 git config --add --global user.name "$ME"
 git config --add --global user.email "$ME@pm.me"
 git config --add --global init.defaultBranch main
-mkdir $HOME/.config
-git clone https://github.com/pyculiar/dot.git $HOME/.config
+mv .gitconfig $HOME/.config/git/config
+git clone https://github.com/neovim/nvim-lspconfig $HOME/.config/nvim/pack/nvim/start/nvim-lspconfig
+echo "require("lspconfig").gopls.setup({})\nrequire("lspconfig").ruff.setup({})" > $HOME/.config/nvim/init.lua
+echo "set -g base-index 1\nsetw -g pane-base-index 1" > $HOME/.config/tmux/tmux.conf
+touch $HOME/.local/python/history
 fish -c "set -Ux LESSHISTFILE -"
 fish -c "set -Ux PYTHON_HISTORY $HOME/.local/python/history"
 fish -c "set -Ux JUPYTER_CONFIG_DIR $HOME/.local/jupyter"
@@ -75,14 +84,9 @@ fish -c "set -Ux GOBIN $HOME/.local/go/bin"
 fish -c "fish_add_path /usr/local/go/bin"
 fish -c "fish_add_path $HOME/.local/bin"
 fish -c "fish_add_path $HOME/.local/go/bin"
-mkdir -p $HOME/.config/fish/completions
-mkdir -p $HOME/.config/git
-mkdir -p $HOME/.local/{python, ipython, jupyter}
-mkdir -p $HOME/{avi, dev, doc, jpg, tmp, var, wav}
-mv .gitconfig $HOME/.config/git/config
-touch $HOME/.local/python/history
 fish -c "uv generate-shell-completion fish > $HOME/.config/fish/completions/uv.fish"
 fish -c "uvx --generate-shell-completion fish > $HOME/.config/fish/completions/uvx.fish"
+fish -c "go install golang.org/x/tools/gopls@latest"
 fish -c "abbr --add vi nvim"
 fish -c "abbr --add vim nvim"
 echo "# ALL DONE!"
