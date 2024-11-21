@@ -64,9 +64,9 @@ su -l $ME -c "\
 echo "# DONE!"
 echo "# Configuring some stuff..."
 chsh -s /usr/bin/fish
-mkdir -p $HOME/.config/{fish/completions, nvim, git, tmux}
-mkdir -p $HOME/.local/{python, ipython, jupyter}
-mkdir -p $HOME/{avi, dev, doc, jpg, tmp, var, wav}
+fish -c "mkdir -p $HOME/.config/{fish/completions, nvim, git, tmux}"
+fish -c "mkdir -p $HOME/.local/{python, ipython, jupyter}"
+fish -c "mkdir -p $HOME/{avi, dev, doc, jpg, tmp, var, wav}"
 git config --add --global user.name "$ME"
 git config --add --global user.email "$ME@pm.me"
 git config --add --global init.defaultBranch main
@@ -84,6 +84,7 @@ fish -c "set -Ux GOBIN $HOME/.local/go/bin"
 fish -c "fish_add_path /usr/local/go/bin"
 fish -c "fish_add_path $HOME/.local/bin"
 fish -c "fish_add_path $HOME/.local/go/bin"
+fish -c "fish_add_path $HOME/.cargo/bin"
 fish -c "uv generate-shell-completion fish > $HOME/.config/fish/completions/uv.fish"
 fish -c "uvx --generate-shell-completion fish > $HOME/.config/fish/completions/uvx.fish"
 fish -c "go install golang.org/x/tools/gopls@latest"
