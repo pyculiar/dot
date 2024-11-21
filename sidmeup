@@ -1,49 +1,88 @@
 #! /usr/bin/env bash
-# set sid
 export ME=$(whoami)
-echo "###########################"
-echo "Entering superuser space..."
+echo "#############################"
+echo "# Entering superuser space..."
+echo "# Updating apt sources to sid"
 su - -c "echo | tee /etc/apt/sources.list << EOF
 deb http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware
 deb-src http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware
 EOF"
+echo "# DONE!"
+echo "# Upgrading system to sid"
 su - -c "\
   ME='$ME'
   apt update \
   && apt full-upgrade --yes \
+  && echo '# DONE!' \
+  && echo '# Installing sudo and adding user to sudoers' \
   && apt install sudo --yes \
   && usermod -aG sudo '$ME' \
+  && echo '# DONE!' \
 "
-echo "...exiting superuser space."
-echo "###########################"
+echo "# ...exiting superuser space."
+echo "#############################"
+echo "# Installing packages with apt"
 su -l $ME -c "\
   sudo -S apt update \
   && sudo apt upgrade --yes \
-  && sudo apt install --yes curl fish tmux neovim git podman openvpn openresolv clang xinit lxdm awesome wireplumber pipewire-pulse alacritty firefox vlc \
-  && if lspci | grep -q NVIDIA; then sudo apt install --yes linux-headers-amd64 nvidia-driver nvidia-xconfig; fi \
+  && sudo apt install --yes curl fish tmux neovim git podman openvpn openresolv clang \
+  && sudo apt install --yes xinit lxdm awesome wireplumber pipewire-pulse alacritty firefox vlc \
+  && if lspci | grep -q NVIDIA; then sudo apt install --yes linux-headers-amd64 nvidia-driver nvidia-xconfig nvidia-cuda-dev nvidia-cuda-toolkit; fi \
   && sudo apt clean --yes \
   && sudo apt autoclean --yes \
   && sudo apt autoremove --purge --yes \
-  && echo /usr/bin/fish | sudo tee -a /etc/shells
+  && echo '# Adding fish to shells' \
+  && echo /usr/bin/fish | sudo tee -a /etc/shells \
 "
-fish -c "abbr --add vi nvim"
-fish -c "abbr --add vim nvim"
-su -l $ME -c "curl -fsSL https://ollama.com/install.sh | sh"
+echo "# DONE!" 
+echo "# Installing Ollama"
+su -l $ME -c "\
+  curl -L 'https://ollama.com/download/ollama-linux-amd64.tgz' -o ollama.tgz \
+  && sudo -S tar -C /usr -xzf ollama.tgz \
+  && rm ollama.tgz \
+"
+echo "# DONE!"
+echo "# Installing UV"
 curl -LsSf https://astral.sh/uv/install.sh | sh
-export PATH=$PATH:$HOME/.local/bin
-mkdir -p $HOME/.config/fish/completions
-uv generate-shell-completion fish > $HOME/.config/fish/completions/uv.fish
-uvx --generate-shell-completion fish > $HOME/.config/fish/completions/uvx.fish
+echo "# DONE!"
+echo "# Installing Go"
 su -l $ME -c "\
   curl 'https://dl.google.com/go/go1.23.3.linux-amd64.tar.gz' -o go.tar.gz \
   && sudo -S tar -C /usr/local -xzf go.tar.gz \
   && rm go.tar.gz \
 "
-fish -c "fish_add_path /usr/local/go/bin"
-fish -c "fish_add_path $HOME/go/bin"
+echo "# DONE!"
+echo "# Installing Discord"
 su -l $ME -c "\
   curl 'https://stable.dl2.discordapp.net/apps/linux/0.0.75/discord-0.0.75.deb' -o discord.deb \
   && sudo -S apt install --yes ./discord.deb \
   && rm discord.deb
 "
+echo "# DONE!"
+echo "# Configuring some stuff..."
 chsh -s /usr/bin/fish
+git config --add --global user.name "$ME"
+git config --add --global user.email "$ME@pm.me"
+git config --add --global init.defaultBranch main
+mkdir $HOME/.config
+git clone https://github.com/pyculiar/dot.git $HOME/.config
+fish -c "set -Ux LESSHISTFILE -"
+fish -c "set -Ux PYTHON_HISTORY $HOME/.local/python/history"
+fish -c "set -Ux JUPYTER_CONFIG_DIR $HOME/.local/jupyter"
+fish -c "set -Ux IPYTHONDIR $HOME/.local/ipython"
+fish -c "set -Ux GOPATH $HOME/.local/go"
+fish -c "set -Ux GOBIN $HOME/.local/go/bin"
+fish -c "fish_add_path /usr/local/go/bin"
+fish -c "fish_add_path $HOME/.local/bin"
+fish -c "fish_add_path $HOME/.local/go/bin"
+mkdir -p $HOME/.config/fish/completions
+mkdir -p $HOME/.config/git
+mkdir -p $HOME/.local/{python, ipython, jupyter}
+mkdir -p $HOME/{avi, dev, doc, jpg, tmp, var, wav}
+mv .gitconfig $HOME/.config/git/config
+touch $HOME/.local/python/history
+fish -c "uv generate-shell-completion fish > $HOME/.config/fish/completions/uv.fish"
+fish -c "uvx --generate-shell-completion fish > $HOME/.config/fish/completions/uvx.fish"
+fish -c "abbr --add vi nvim"
+fish -c "abbr --add vim nvim"
+echo "# ALL DONE!"
