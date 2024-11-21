@@ -1,0 +1,46 @@
+#! /usr/bin/env bash
+# sudo user
+MYUSER=$(whoami)
+echo "Entering superuser space"
+su -p
+usermod -aG sudo $MYUSER
+exit
+echo "Exiting superuser space"
+# set sid
+echo | sudo tee /etc/apt/sources.list << EOF
+deb http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware
+EOF
+# upgrade system
+sudo apt update
+sudo apt upgrade --yes
+# cli
+sudo apt install --yes fish tmux neovim git podman openvpn openresolv clang
+# gui
+sudo apt install --yes xinit lxdm awesome wireplumber pipewire-pulse alacritty firefox vlc
+# nvidia
+if lspci | grep -q NVIDIA; then
+  sudo apt install --yes linux-headers-amd64 nvidia-driver nvidia-xconfig
+fi
+# cleanup
+sudo apt clean
+sudo apt autoclean
+sudo apt autoremove --purge
+# fish
+echo /usr/bin/fish | sudo tee -a /etc/shells
+chsh -s /usr/bin/fish
+fish -c abbr --add vi nvim
+fish -c abbr --add vim nvim
+# ollama
+curl -fsSL https://ollama.com/install.sh | sh
+# uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv generate-shell-completion fish > $HOME/.config/fish/completions/uv.fish
+uvx --generate-shell-completion fish > $HOME/.config/fish/completions/uvx.fish
+# go
+sudo rm -rf /usr/local/go
+curl "https://dl.google.com/go/go1.23.3.linux-amd64.tar.gz" -o go.tar.gz && sudo tar -C /usr/local -xzf go.tar.gz && rm go.tar.gz
+fish -c fish_add_path /usr/local/go/bin
+fish -c fish_add_path $HOME/go/bin
+# discord
+curl "https://stable.dl2.discordapp.net/apps/linux/0.0.75/discord-0.0.75.deb" -o discord.deb && sudo apt install --yes ./discord.deb && rm discord.deb
