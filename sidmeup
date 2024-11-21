@@ -1,22 +1,22 @@
 #! /usr/bin/env bash
 # set sid
 export ME=$(whoami)
-echo "^^^^^^^^^^^^^^^^^^^^^^^^"
-echo "Entering superuser space"
-su - -c 'echo | tee /etc/apt/sources.list << EOF
+echo "###########################"
+echo "Entering superuser space..."
+su - -c "echo | tee /etc/apt/sources.list << EOF
 deb http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware
 deb-src http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware
-EOF'
-su - -w $ME -c '\
+EOF"
+su - -c "\
+  ME='$ME'
   apt update \
   && apt full-upgrade --yes \
   && apt install sudo --yes \
-  && usermod -aG sudo $ME \
-  && echo "Added user $ME to sudoers." \
-'
-echo "Exiting superuser space."
-echo "vvvvvvvvvvvvvvvvvvvvvvvv"
-su -l $ME -c '\
+  && usermod -aG sudo '$ME' \
+"
+echo "...exiting superuser space."
+echo "###########################"
+su -l $ME -c "\
   sudo -S apt update \
   && sudo apt upgrade --yes \
   && sudo apt install --yes curl fish tmux neovim git podman openvpn openresolv clang xinit lxdm awesome wireplumber pipewire-pulse alacritty firefox vlc \
@@ -25,24 +25,24 @@ su -l $ME -c '\
   && sudo apt autoclean --yes \
   && sudo apt autoremove --purge --yes \
   && echo /usr/bin/fish | sudo tee -a /etc/shells
-'
-fish -c 'abbr --add vi nvim'
-fish -c 'abbr --add vim nvim'
+"
+fish -c "abbr --add vi nvim"
+fish -c "abbr --add vim nvim"
 curl -fsSL https://ollama.com/install.sh | sh
 curl -LsSf https://astral.sh/uv/install.sh | sh
 mkdir -p $HOME/.config/fish/completions
 uv generate-shell-completion fish > $HOME/.config/fish/completions/uv.fish
 uvx --generate-shell-completion fish > $HOME/.config/fish/completions/uvx.fish
-su -l $ME -c '\
-  curl "https://dl.google.com/go/go1.23.3.linux-amd64.tar.gz" -o go.tar.gz \
+su -l $ME -c "\
+  curl 'https://dl.google.com/go/go1.23.3.linux-amd64.tar.gz' -o go.tar.gz \
   && sudo -S tar -C /usr/local -xzf go.tar.gz \
   && rm go.tar.gz \
-'
-fish -c 'fish_add_path /usr/local/go/bin'
-fish -c 'fish_add_path $HOME/go/bin'
-su -l $ME -c '\
-  curl "https://stable.dl2.discordapp.net/apps/linux/0.0.75/discord-0.0.75.deb" -o discord.deb \
+"
+fish -c "fish_add_path /usr/local/go/bin"
+fish -c "fish_add_path $HOME/go/bin"
+su -l $ME -c "\
+  curl 'https://stable.dl2.discordapp.net/apps/linux/0.0.75/discord-0.0.75.deb' -o discord.deb \
   && sudo -S apt install --yes ./discord.deb \
   && rm discord.deb
-'
+"
 chsh -s /usr/bin/fish
